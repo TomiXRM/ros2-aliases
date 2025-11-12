@@ -88,6 +88,7 @@ function rahelp {
   echo "`cyan cbp`    : colcon build with packages select (Both fzf and tab completion are valid)"
   echo "`cyan cbprm`  : colcon build with packages select after rm -rf build install log for selected packages"
   echo "`cyan ctp`    : colcon test with packages select and colcon test-result --verbose"
+  echo "`cyan rinstall` : source install/setup.bash from workspace root"
   green "--- roscd ---"
   echo "`cyan roscd`  : cd to the selected package (Both fzf and tab completion are valid)"
   green "--- ROS CLI ---"
@@ -275,6 +276,15 @@ function ctp {
   history -s "ctp $pkg_name"
   popd > /dev/null
 }
+
+function rinstall {
+  _check_ROSWS_env && return
+  pushd "$ROS_WORKSPACE" > /dev/null
+  cyan "source ./install/setup.bash"
+  source ./install/setup.bash
+  popd > /dev/null
+}
+
 _pkg_name_complete() {
   local pkg_names=$(find $ROS_WORKSPACE/src -name "package.xml" -print0 | while IFS= read -r -d '' file; do grep -oP '(?<=<name>).*?(?=</name>)' "$file"; done)
   COMPREPLY=( $(compgen -W "$pkg_names" -- "${COMP_WORDS[$COMP_CWORD]}") )
