@@ -59,7 +59,7 @@ function setenvfile {
   fi
 }
 
-cp -n $ROS2_ALIASES_DIR/.env_example $ROS2_ALIASES_DIR/.env
+cp --update=none $ROS2_ALIASES_DIR/.env_example $ROS2_ALIASES_DIR/.env
 setenvfile $ROS2_ALIASES_DIR/.env
 
 # source other scripts
@@ -125,7 +125,7 @@ function setrws {
     red "[ros2 aliases] No src directory in the workspace : $workspace_candidate"
     return
   fi
-  cd $workspace_candidate
+  cd "$workspace_candidate"
   ROS_WORKSPACE=$(pwd)
   echo "`cyan ROS_WORKSPACE` : "$ROS_WORKSPACE""
   history -s "setrws $ROS_WORKSPACE"
@@ -157,15 +157,33 @@ function setrdi {
 
 # ---colcon build---
 function _check_ROSWS_env() {
-  if [ ! -d "$ROS_WORKSPACE/src" ]; then
-    red "[ros2 aliases] No src directory in the workspace : $workspace_candidate"
-    return 0
+  local workspace_path="$ROS_WORKSPACE"
+
+  if [ -n "$workspace_path" ] && [ -d "$workspace_path/src" ]; then
+    return 1
   fi
-  return 1
+
+  local current_dir="$PWD"
+  while [ "$current_dir" != "/" ]; do
+    if [ -d "$current_dir/src" ]; then
+      ROS_WORKSPACE="$current_dir"
+      workspace_path="$current_dir"
+      return 1
+    fi
+    current_dir="$(dirname "$current_dir")"
+  done
+
+  if [ -z "$workspace_path" ]; then
+    workspace_path="$PWD"
+  fi
+
+  red "[ros2 aliases] No src directory in the workspace : $workspace_path"
+  red "[ros2 aliases] Run 'setrws <workspace_path>' to configure the workspace."
+  return 0
 }
 
 function colcon_build_command_exec {
-  pushd $ROS_WORKSPACE > /dev/null
+  pushd "$ROS_WORKSPACE" > /dev/null
   cyan "$@"
   $@
   source ./install/setup.bash
