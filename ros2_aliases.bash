@@ -280,7 +280,7 @@ function ctp {
 function rinstall {
   _check_ROSWS_env && return
   pushd "$ROS_WORKSPACE" > /dev/null
-  cyan "source ./install/setup.bash"
+  cyan "source $ROS_WORKSPACE/install/setup.bash"
   source ./install/setup.bash
   popd > /dev/null
 }
