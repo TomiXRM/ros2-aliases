@@ -132,6 +132,17 @@ function rnkill {
     history -s $CMD
 }
 
+function rkillall {
+    echo "Killing all ROS2 processes..."
+    pgrep -af "/opt/ros/" | grep -v "pgrep" | while read -r line; do
+        echo "  Killing: $line"
+    done
+    pkill -9 -f "/opt/ros/" 2>/dev/null
+    ros2 daemon stop 2>/dev/null
+    echo "Done."
+    history -s rkillall
+}
+
 # Services
 
 function rslist {
